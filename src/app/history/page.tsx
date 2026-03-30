@@ -5,7 +5,12 @@ import EmptyState from "@/components/EmptyState";
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
-  const ids = await listBriefingIds(30);
+  let ids: string[] = [];
+  try {
+    ids = await listBriefingIds(30);
+  } catch {
+    return <EmptyState />;
+  }
 
   if (ids.length === 0) return <EmptyState />;
 
