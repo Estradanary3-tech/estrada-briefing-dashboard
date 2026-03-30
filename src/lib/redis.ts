@@ -1,18 +1,18 @@
 import { Redis } from "@upstash/redis";
 import { Briefing } from "./types";
 
-function getRedis(): Redis {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    throw new Error("Redis not configured");
+function getRedis(): Redis | null {
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  if (!url || !token || !url.startsWith("http")) {
+    return null;
   }
-  return new Redis({
-    url: process.env.KV_REST_API_URL,
-    token: process.env.KV_REST_API_TOKEN,
-  });
+  return new Redis({ url, token });
 }
 
 export async function saveBriefing(briefing: Briefing): Promise<void> {
   const redis = getRedis();
+  if (!redis) return;
   const pipe = redis.pipeline();
   pipe.set(`briefing:${briefing.id}`, JSON.stringify(briefing));
   pipe.set("briefing:latest", briefing.id);
@@ -23,6 +23,7 @@ export async function saveBriefing(briefing: Briefing): Promise<void> {
 
 export async function getLatestBriefing(): Promise<Briefing | null> {
   const redis = getRedis();
+  if (!redis) return null;
   const latestId = await redis.get<string>("briefing:latest");
   if (!latestId) return null;
   return getBriefingById(latestId);
@@ -30,6 +31,7 @@ export async function getLatestBriefing(): Promise<Briefing | null> {
 
 export async function getBriefingById(id: string): Promise<Briefing | null> {
   const redis = getRedis();
+  if (!redis) return null;
   const data = await redis.get<string>(`briefing:${id}`);
   if (!data) return null;
   return typeof data === "string" ? JSON.parse(data) : data;
@@ -37,5 +39,6 @@ export async function getBriefingById(id: string): Promise<Briefing | null> {
 
 export async function listBriefingIds(limit = 30): Promise<string[]> {
   const redis = getRedis();
+  if (!redis) return [];
   return redis.lrange("briefing:index", 0, limit - 1);
 }
