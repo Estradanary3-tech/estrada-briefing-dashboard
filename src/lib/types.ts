@@ -30,3 +30,47 @@ export interface Briefing {
 
   gammaUrl?: string;
 }
+
+export interface FleetCheck {
+  name: string;
+  ok: boolean;
+  status_code?: number;
+  latency_ms?: number;
+  age_days?: number;
+  free_gb?: number;
+  detail?: string;
+}
+
+export interface FleetRemediation {
+  target: string;
+  action: string;
+  ok?: boolean;
+  detail?: string;
+  freed_mb?: number;
+  code?: number;
+}
+
+export interface FleetKpis {
+  pipeline_value: number;
+  open_deals: number;
+  deals_by_pipeline: Record<string, number>;
+  new_leads_today: number;
+  appointments_today: number;
+  upcoming_today: Array<{ title: string; start?: string; contact?: string }>;
+  stalled_deals: Array<{ name: string; value: number; days_stale: number }>;
+  stalled_count: number;
+  fetched_at: string;
+}
+
+export interface FleetStatus {
+  ts: string;
+  owner?: string;
+  overall_ok: boolean;
+  kpis?: FleetKpis;
+  agents: FleetCheck[];
+  mcp_servers: FleetCheck[];
+  oauth: FleetCheck[];
+  disk: FleetCheck;
+  failures: FleetCheck[];
+  remediations: FleetRemediation[];
+}

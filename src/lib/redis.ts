@@ -42,3 +42,11 @@ export async function listBriefingIds(limit = 30): Promise<string[]> {
   if (!redis) return [];
   return redis.lrange("briefing:index", 0, limit - 1);
 }
+
+export async function getFleetStatus<T = unknown>(): Promise<T | null> {
+  const redis = getRedis();
+  if (!redis) return null;
+  const data = await redis.get<string>("fleet:status");
+  if (!data) return null;
+  return typeof data === "string" ? JSON.parse(data) : (data as T);
+}
